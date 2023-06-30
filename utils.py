@@ -11,8 +11,11 @@ import keras.backend as K
 from keras.preprocessing import image
 from tensorflow.keras.utils import load_img
 from tensorflow.keras.utils import img_to_array
-from tensorflow.keras.utils import pad_sequences
-from keras.applications.inception_v3 import preprocess_input
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+# from keras.applications.inception_v3 import preprocess_input
+from tensorflow.keras.applications.efficientnet_v2 import preprocess_input 
+# from efficientnet.keras import preprocess_input as preprocess_input_efficientnet
+
 
 from constants import START_TOKEN, END_TOKEN
 
@@ -144,22 +147,41 @@ def masked_loss_function(real, pred):
     loss_ *= mask
     return tf.reduce_mean(loss_)
 
+''' ---- start efficient net ---- '''
 
-def extract_inception_features_images(data, model, input_size = (299,299)):
+def extract_efficient_features_images(data, model, input_size = (300,300)):
     features = {}
     for path in tqdm(data):
-        _feature = _extract_inception_feature_one_image(path, model, input_size)
+        _feature = _extract_efficient_feature_one_image(path, model, input_size)
         features[path] = _feature
     return features
 
 
-def _extract_inception_feature_one_image(path, model, input_size = (299,299)):
+def _extract_efficient_feature_one_image(path, model, input_size = (300,300)):
     image = load_img(path, target_size=input_size)
     image = img_to_array(image)
     image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
     image = preprocess_input(image)
     feature = model.predict(image, verbose=0)
-    return feature.reshape(2048)
+    return feature.reshape(1536)
+
+''' ---- end efficient net ----'''
+
+# def extract_inception_features_images(data, model, input_size = (299,299)):
+#     features = {}
+#     for path in tqdm(data):
+#         _feature = _extract_inception_feature_one_image(path, model, input_size)
+#         features[path] = _feature
+#     return features
+
+
+# def _extract_inception_feature_one_image(path, model, input_size = (299,299)):
+#     image = load_img(path, target_size=input_size)
+#     image = img_to_array(image)
+#     image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
+#     image = preprocess_input(image)
+#     feature = model.predict(image, verbose=0)
+#     return feature.reshape(2048)
 
 
 def _extract_ssd_feature_one_image(path, ssd_model, confidence_threshold=0.5):
@@ -209,11 +231,19 @@ def extract_ssd_features_images(data, ssd_model, confidence_threshold=0.5):
     return features
 
 
-def combine_feature(feature, ssd_feature, features_shape = 2048):
-    ssd_feature = np.pad(ssd_feature, (0, features_shape - ssd_feature.shape[0]), 'constant', constant_values=(0, 0)).astype(np.float32)
-    combined_features = np.vstack((feature, ssd_feature)).astype(np.float32)
+# def combine_feature(feature, ssd_feature, features_shape = 2048):
+#     ssd_feature = np.pad(ssd_feature, (0, features_shape - ssd_feature.shape[0]), 'constant', constant_values=(0, 0)).astype(np.float32)
+#     combined_features = np.vstack((feature, ssd_feature)).astype(np.float32)
+#     return combined_features.flatten()
+
+''' ---- start efficient net ---- '''
+
+def combine_feature(feature, efficient_feature, features_shape = 1536):
+    efficient_feature = np.pad(efficient_feature, (0, features_shape - efficient_feature.shape[0]), 'constant', constant_values=(0, 0)).astype(np.float32)
+    combined_features = np.vstack((feature, efficient_feature)).astype(np.float32)
     return combined_features.flatten()
 
+''' ---- end efficient net ----'''
 
 def get_max_length(captions, percentile):
     all_caps = []
@@ -250,8 +280,54 @@ def data_generator(captions, pictures ,tokenizer, batch_size, max_length):
                 n=0
 
 
+# def k_beam_search(model, pic_fe, word_to_id, id_to_word, max_length, k_beams = 3, log = False, mode='single'):
+#     shape = 2048 if mode == 'single' else 4096
+#     start = [word_to_id[START_TOKEN]]
+    
+#     start_word = [[start, 0.0]]
+    
+#     while len(start_word[0][0]) < max_length:
+#         temp = []
+#         for s in start_word:
+#             sequence  = pad_sequences([s[0]], maxlen=max_length).reshape((1,max_length))
+#             preds = model.predict([pic_fe.reshape(1, shape), sequence], verbose=0)
+#             word_preds = np.argsort(preds[0])[-k_beams:]
+
+#             for w in word_preds:
+                
+#                 next_cap, prob = s[0][:], s[1]
+#                 next_cap.append(w)
+#                 if log:
+#                     prob += np.log(preds[0][w]) # assign a probability to each K words4
+#                 else:
+#                     prob += preds[0][w]
+#                 temp.append([next_cap, prob])
+#         start_word = temp
+
+#         # Sorting according to the probabilities
+#         start_word = sorted(start_word, reverse=False, key=lambda l: l[1])
+
+#         # Getting the top words
+#         start_word = start_word[-k_beams:]
+    
+#     start_word = start_word[-1][0]
+#     captions_ = [id_to_word[i] for i in start_word]
+
+#     final_caption = []
+    
+#     for i in captions_:
+#         if i != END_TOKEN:
+#             final_caption.append(i)
+#         else:
+#             break
+    
+#     final_caption = ' '.join(final_caption[1:])
+#     return final_caption
+
+''' ---- start efficient net ---- '''
+
 def k_beam_search(model, pic_fe, word_to_id, id_to_word, max_length, k_beams = 3, log = False, mode='single'):
-    shape = 2048 if mode == 'single' else 4096
+    shape = 1536 if mode == 'single' else 1536
     start = [word_to_id[START_TOKEN]]
     
     start_word = [[start, 0.0]]
@@ -293,3 +369,5 @@ def k_beam_search(model, pic_fe, word_to_id, id_to_word, max_length, k_beams = 3
     
     final_caption = ' '.join(final_caption[1:])
     return final_caption
+
+''' ---- end efficient net ---- '''

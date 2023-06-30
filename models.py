@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 from keras import backend as K
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 
 from keras.models import Model
 from keras.layers import Input
@@ -54,7 +54,7 @@ class ImageCaptionModel():
         return embed_layer
 
 
-    def build_model(self, max_length, feature_size = 2048, units= 512, mode='single'):
+    def build_model(self, max_length, feature_size = 1536, units= 512, mode='single'):
         """
         Build the Image Captioning Model
         Args:
@@ -62,7 +62,8 @@ class ImageCaptionModel():
                     - single: use CNN backbone (InceptionNetV3)
                     - dual: use 2 model are CNN (InceptionNetV3) and Object Detection (SSD300)
         """
-        feature_size = 2048 if mode == 'single' else 2048*2
+        # feature_size = 2048 if mode == 'single' else 2048*2
+        feature_size = 1536 if mode == 'single' else 1536 *2
         features = Input(shape=(feature_size,))
         X_fe_one_dim = Dense(units, activation='relu')(features) 
         X_fe = RepeatVector(max_length)(X_fe_one_dim)
@@ -85,12 +86,23 @@ class ImageCaptionModel():
         return model
 
 
-def inception_model():
-    from keras.applications.inception_v3 import InceptionV3
+# def inception_model():
+#     from keras.applications.inception_v3 import InceptionV3
+#     from keras.models import Model
+#     inception = InceptionV3(weights='inception_v3_weights_tf_dim_ordering_tf_kernels.h5')
+#     model = Model(inputs=inception.inputs, outputs=inception.layers[-2].output)
+#     return model
+
+''' ---- start efficient net ---- '''
+
+def efficientnet_model():
+    from tensorflow.keras.applications.efficientnet_v2 import EfficientNetV2B3
     from keras.models import Model
-    inception = InceptionV3(weights='inception_v3_weights_tf_dim_ordering_tf_kernels.h5')
-    model = Model(inputs=inception.inputs, outputs=inception.layers[-2].output)
+    efficient = EfficientNetV2B3(weights='efficientnetv2-b3.h5')
+    model = Model(inputs=efficient.inputs, outputs=efficient.layers[-2].output)
     return model
+
+''' ---- end efficient net ----'''
 
 
 def ssd_300_model():

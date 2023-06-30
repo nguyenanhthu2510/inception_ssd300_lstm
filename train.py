@@ -56,18 +56,18 @@ def run(batch_size = 64, output = ROOT / 'weights', epochs = 100, save_history =
     print('>>> Get features...')
     if mode == 'single':
         print('>>> Single mode selected')
-        ex = ''
+        ex = '_efficient_features'
     else:
         print('>>> Dual mode selected')
-        ex = '_combine'
+        ex = '_combine_features_es'
     try:
-        with open(f'process_data/train{ex}_features.pkl','rb') as f:
+        with open(f'process_data/train{ex}.pkl','rb') as f:
             train_features= pickle.load(f)
     except FileNotFoundError as err:
         print('Please run `preprocess.py` first')
 
     try:
-        with open(f'process_data/test{ex}_features.pkl','rb') as f:
+        with open(f'process_data/test{ex}.pkl','rb') as f:
             test_features= pickle.load(f)
     except FileNotFoundError as err:
         print('Please run `preprocess.py` first')
@@ -82,7 +82,7 @@ def run(batch_size = 64, output = ROOT / 'weights', epochs = 100, save_history =
     class CustomSaver(keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs={}):
             if epoch % 10 == 0:  # or save after some epoch, each k-th epoch etc.
-                self.model.save(output / f'model_{epoch}_{mode}.h5')
+                self.model.save(f'{output}/model_{epoch}_{mode}.h5')
 
     saver = CustomSaver()
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=5)
