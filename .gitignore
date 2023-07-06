@@ -3,10 +3,10 @@ venv/
 __pycache__/
 .git/
 .venv/
-data/annotations/
+data/annotations/		
 data/train2014/
 data/glove/
 # data/test/
-process_data/
+process_data/			
 weights/
 ssd300/weights
