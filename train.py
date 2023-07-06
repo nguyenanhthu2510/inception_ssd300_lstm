@@ -57,9 +57,11 @@ def run(batch_size = 64, output = ROOT / 'weights', epochs = 100, save_history =
     if mode == 'single':
         print('>>> Single mode selected')
         ex = '_efficient_features'
+        # ex = '_features'
     else:
         print('>>> Dual mode selected')
         ex = '_combine_features_es'
+        # ex = '_combine_features'
     try:
         with open(f'process_data/train{ex}.pkl','rb') as f:
             train_features= pickle.load(f)
@@ -137,4 +139,3 @@ if __name__ == '__main__':
     main()
     
     
-

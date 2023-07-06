@@ -327,7 +327,7 @@ def data_generator(captions, pictures ,tokenizer, batch_size, max_length):
 ''' ---- start efficient net ---- '''
 
 def k_beam_search(model, pic_fe, word_to_id, id_to_word, max_length, k_beams = 3, log = False, mode='single'):
-    shape = 1536 if mode == 'single' else 1536
+    shape = 1536 if mode == 'single' else 1536*2
     start = [word_to_id[START_TOKEN]]
     
     start_word = [[start, 0.0]]

@@ -41,18 +41,18 @@ else:
 
 
 # Download glove embeddings
-print('>>> Downloading glove embeddings <Wikipedia 2014 + Gigaword 5>...')
-if not (os.path.exists(ROOT / 'data' / 'glove') and os.listdir(ROOT / 'data' / 'glove')):
-    if not os.path.exists(ROOT / 'data' / 'glove'):
-        os.mkdir(ROOT / 'data' / 'glove')
-    wget.download(GLOVE_URL, out = 'data/glove')
+# print('>>> Downloading glove embeddings <Wikipedia 2014 + Gigaword 5>...')
+# if not (os.path.exists(ROOT / 'data' / 'glove') and os.listdir(ROOT / 'data' / 'glove')):
+#     if not os.path.exists(ROOT / 'data' / 'glove'):
+#         os.mkdir(ROOT / 'data' / 'glove')
+#     wget.download(GLOVE_URL, out = 'data/glove')
 
-    with zipfile.ZipFile(ROOT / 'data' / 'glove' / 'glove.6B.zip', 'r') as zip_ref:
-        zip_ref.extractall(ROOT / 'data' / 'glove')
+#     with zipfile.ZipFile(ROOT / 'data' / 'glove' / 'glove.6B.zip', 'r') as zip_ref:
+#         zip_ref.extractall(ROOT / 'data' / 'glove')
 
-    os.remove(ROOT / 'data' / 'glove' / 'glove.6B.zip')
-else:
-    print('Glove embeddings already downloaded')
+#     os.remove(ROOT / 'data' / 'glove' / 'glove.6B.zip')
+# else:
+#     print('Glove embeddings already downloaded')
 
 
 # Download cfg and weights of ssd300
@@ -61,3 +61,4 @@ if not (os.path.exists(ROOT / 'ssd300') and os.listdir(ROOT / 'ssd300')):
     if not os.path.exists(ROOT / 'ssd300'):
         os.mkdir(ROOT / 'ssd300' / 'weights')
     gdown.download(SSD300_WEIGHTS_URL_DOWNLOAD, output='ssd300/weights/weights.h5', quiet=False)
+    print('done')
